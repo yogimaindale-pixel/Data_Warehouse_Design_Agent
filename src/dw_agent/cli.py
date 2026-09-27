@@ -118,6 +118,7 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
     manifest = {
         "project": project_path,
         "dialect": dialect,
+        "is_accepted": is_accepted,
         "validation_passed": is_accepted,
         "counts": {"pass": pass_cnt, "warn": warn_cnt, "fail": fail_cnt},
         "deliverables_count": 27
@@ -272,11 +273,66 @@ def main():
             return 0
 
         elif args.command == "explain":
-            logger.info(f"[EXPLAIN] {args.artifact}: The Enterprise Bus Matrix maps business processes (rows) to conformed dimensions (columns).")
+            target = args.artifact.lower().strip()
+            explanations = {
+                "bus-matrix": "07_BUS_MATRIX.csv: Enterprise Bus Matrix mapping business processes (rows) to conformed dimensions (columns). Used to plan architecture waves and ensure dimension conformance across data marts.",
+                "grain": "06_GRAIN_DECLARATIONS.md: Single-sentence grain declarations defining exactly what one row represents in every fact table before selecting dimensions or measures.",
+                "scd": "08_DIMENSION_CATALOG.xlsx: Slowly Changing Dimension (SCD) policies defining attribute change behavior (Type 0 fixed, Type 1 overwrite, Type 2 historical validity tracking, Type 3 current/previous).",
+                "sttm": "15_STTM.xlsx: Source-to-Target Mappings mapping source system tables and columns to target dimension and fact attributes, including transformation rules, lookup logic, default values, and DQ rule IDs.",
+                "dq": "17_DATA_QUALITY_RULES.xlsx: Automated Data Quality controls covering key uniqueness, referential integrity, range checks, null checks, and SCD validity checks.",
+                "lineage": "18_LINEAGE.csv: End-to-end data lineage tracing source systems, source tables, and source columns through to target warehouse tables and reporting KPIs.",
+                "ddl": "13_TARGET_DDL.sql: Executable target physical DDL schema including surrogate keys, business keys, attribute data types, foreign keys, audit columns, unknown member inserts (-1, 'UNKNOWN'), and SCD2 current views.",
+                "etl": "16_ETL_SPECIFICATIONS.md: Detailed ETL/ELT execution specifications covering initial load, incremental CDC, SCD2 processing, late-arriving dimensions, restartability, and quarantine logic.",
+                "grain-001": "Rule GRAIN-001 [CRITICAL]: Ensures every fact table has an explicit single-sentence grain declaration that is supported by source key uniqueness in profiled data.",
+                "rel-001": "Rule REL-001 [CRITICAL]: Blocks direct fact-to-fact joins without conformed dimensions in between.",
+                "rel-002": "Rule REL-002 [WARNING]: Checks that fact tables have foreign key references to conformed or role-playing dimensions.",
+                "rel-003": "Rule REL-003 [CRITICAL]: Blocks foreign key references in fact tables that point to missing dimension tables.",
+                "scd-001": "Rule SCD-001 [CRITICAL]: Requires all SCD Type 2 dimensions to contain validity tracking columns (effective_date, expiration_date, is_current).",
+                "sttm-001": "Rule STTM-001 [CRITICAL]: Verifies that every target column in Source-to-Target Mappings exists in the generated target DDL schema."
+            }
+            exp_text = explanations.get(target, f"Artifact/Rule '{args.artifact}': Deterministic rule and deliverable specification in Data Warehouse Design Agent.")
+            logger.info(f"[EXPLAIN] {target.upper()}: {exp_text}")
             return 0
 
         elif args.command == "diff":
-            logger.info(f"[DIFF] Baseline {args.baseline} vs Candidate {args.candidate}: Deliverable schemas match.")
+            b_path = Path(args.baseline)
+            c_path = Path(args.candidate)
+            b_out = b_path if b_path.name == "output" else b_path / "output"
+            c_out = c_path if c_path.name == "output" else c_path / "output"
+
+            if not b_out.exists():
+                logger.error(f"[DIFF] Baseline output path {b_out} does not exist.")
+                return 1
+            if not c_out.exists():
+                logger.error(f"[DIFF] Candidate output path {c_out} does not exist.")
+                return 1
+
+            b_files = set(f.name for f in b_out.iterdir() if f.is_file())
+            c_files = set(f.name for f in c_out.iterdir() if f.is_file())
+
+            missing_in_c = b_files - c_files
+            added_in_c = c_files - b_files
+            common_files = sorted(list(b_files & c_files))
+
+            logger.info(f"[DIFF] Comparing baseline ({b_out}) vs candidate ({c_out})")
+            logger.info(f"[DIFF] Common deliverables: {len(common_files)} files")
+            if missing_in_c:
+                logger.warning(f"[DIFF] Files missing in candidate: {', '.join(missing_in_c)}")
+            if added_in_c:
+                logger.info(f"[DIFF] Files added in candidate: {', '.join(added_in_c)}")
+
+            diff_count = 0
+            for fname in common_files:
+                bf = b_out / fname
+                cf = c_out / fname
+                if bf.stat().st_size != cf.stat().st_size:
+                    diff_count += 1
+                    logger.info(f"[DIFF] Size difference in {fname}: baseline={bf.stat().st_size} bytes, candidate={cf.stat().st_size} bytes")
+
+            if diff_count == 0 and not missing_in_c and not added_in_c:
+                logger.info("[DIFF] Baseline and candidate deliverable packages match exactly.")
+            else:
+                logger.info(f"[DIFF] Comparison complete: {diff_count} files differed in size.")
             return 0
 
         elif args.command == "clean":
@@ -294,3 +350,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

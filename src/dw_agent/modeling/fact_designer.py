@@ -18,18 +18,10 @@ def design_facts(
         grain_obj = next((g for g in grains if g.process_id == bp.process_id), None)
         grain_sentence = grain_obj.grain_sentence if grain_obj else "One row per transaction"
 
+        # Dynamically map foreign keys for all available dimensions in dim_map
         fks = []
-        # Foreign keys to dimensions
-        if "dim_date" in dim_map:
-            fks.append({"col": "date_sk", "target_dim": "dim_date"})
-        if "dim_customers" in dim_map:
-            fks.append({"col": "customer_sk", "target_dim": "dim_customers"})
-        if "dim_borrowers" in dim_map:
-            fks.append({"col": "borrower_sk", "target_dim": "dim_borrowers"})
-        if "dim_products" in dim_map:
-            fks.append({"col": "product_sk", "target_dim": "dim_products"})
-        if "dim_loan_product" in dim_map:
-            fks.append({"col": "loan_product_sk", "target_dim": "dim_loan_product"})
+        for dim_tbl, dim_spec in dim_map.items():
+            fks.append({"col": dim_spec.surrogate_key, "target_dim": dim_tbl})
 
         measures: List[FactMeasure] = []
         degen_dims = []
@@ -49,6 +41,18 @@ def design_facts(
                 FactMeasure(name="accrued_interest", formula="SUM(accrued_interest)", source_column="accrued_interest", additivity="semi-additive", agg_guidance="SUM across accounts, LAST across time"),
                 FactMeasure(name="credit_score", formula="AVG(credit_score)", source_column="credit_score", additivity="non-additive", agg_guidance="AVG")
             ]
+        elif bp.proposed_fact_type == "accumulating_snapshot":
+            degen_dims = ["application_number"]
+            measures = [
+                FactMeasure(name="requested_amount", formula="SUM(requested_amount)", source_column="requested_amount", additivity="additive", agg_guidance="SUM"),
+                FactMeasure(name="approved_amount", formula="SUM(approved_amount)", source_column="approved_amount", additivity="additive", agg_guidance="SUM"),
+                FactMeasure(name="processing_duration_days", formula="AVG(days_to_decision)", source_column="days_to_decision", additivity="non-additive", agg_guidance="AVG")
+            ]
+        else: # factless or generic event
+            degen_dims = ["event_id"]
+            measures = [
+                FactMeasure(name="event_count", formula="COUNT(1)", source_column="event_id", additivity="additive", agg_guidance="COUNT")
+            ]
 
         facts.append(
             FactSpec(
@@ -63,3 +67,4 @@ def design_facts(
         )
 
     return facts
+

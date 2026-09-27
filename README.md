@@ -113,6 +113,8 @@ The DW Design Agent provides a clean suite of terminal commands:
 | `profile` | `python -m dw_agent profile --project <path>` | Profile sample CSV/SQLite data |
 | `design` | `python -m dw_agent design --project <path> --dialect <dialect>` | Execute design pipeline and write outputs |
 | `validate` | `python -m dw_agent validate --project <path>` | Evaluate quality gates and SQLite dry-run |
+| `explain` | `python -m dw_agent explain --artifact bus-matrix` | Explain an artifact or modeling decision rule |
+| `diff` | `python -m dw_agent diff --baseline <path1> --candidate <path2>` | Compare baseline and candidate project output packages |
 | `demo` | `python -m dw_agent demo --scenario ecommerce` | Run seeded demonstration |
 | `clean` | `python -m dw_agent clean --project <path>` | Remove generated output files |
 
