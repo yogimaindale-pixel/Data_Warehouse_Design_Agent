@@ -1,0 +1,7 @@
+agent:
+  name: "Data Warehouse Design Agent"
+  version: "1.0.0"
+  default_dialect: "sqlite"
+  max_sample_rows: 10000
+  strict_validation: true
+  output_format: "all"

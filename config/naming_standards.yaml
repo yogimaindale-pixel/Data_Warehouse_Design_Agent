@@ -1,0 +1,15 @@
+naming:
+  fact_prefix: "fact_"
+  dim_prefix: "dim_"
+  bridge_prefix: "bridge_"
+  view_prefix: "vw_"
+  surrogate_key_suffix: "_sk"
+  business_key_suffix: "_bk"
+  case_convention: "snake_case"
+  audit_columns:
+    - name: "dw_created_at"
+      type: "TIMESTAMP"
+    - name: "dw_updated_at"
+      type: "TIMESTAMP"
+    - name: "dw_batch_id"
+      type: "VARCHAR(64)"

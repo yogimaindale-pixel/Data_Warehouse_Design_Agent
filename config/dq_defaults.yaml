@@ -1,0 +1,5 @@
+dq_defaults:
+  null_threshold_pct: 5.0
+  uniqueness_threshold_pct: 100.0
+  referential_integrity: "strict"
+  action_on_failure: "quarantine"

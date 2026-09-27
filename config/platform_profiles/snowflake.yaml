@@ -1,0 +1,6 @@
+dialect: snowflake
+supports_foreign_keys: false
+supports_clustering: true
+supports_partitioning: false
+comments_supported: true
+surrogate_key_type: "NUMBER AUTOINCREMENT START 1 INCREMENT 1 PRIMARY KEY"

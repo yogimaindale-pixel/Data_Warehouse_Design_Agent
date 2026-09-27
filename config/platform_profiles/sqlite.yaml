@@ -1,0 +1,6 @@
+dialect: sqlite
+supports_foreign_keys: true
+supports_clustering: false
+supports_partitioning: false
+comments_supported: false
+surrogate_key_type: "INTEGER PRIMARY KEY AUTOINCREMENT"

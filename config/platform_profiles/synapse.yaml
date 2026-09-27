@@ -1,0 +1,6 @@
+dialect: synapse
+supports_foreign_keys: true
+supports_clustering: false
+supports_partitioning: true
+comments_supported: false
+surrogate_key_type: "INT IDENTITY(1,1) PRIMARY KEY"

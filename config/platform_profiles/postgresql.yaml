@@ -1,0 +1,6 @@
+dialect: postgresql
+supports_foreign_keys: true
+supports_clustering: false
+supports_partitioning: true
+comments_supported: true
+surrogate_key_type: "BIGSERIAL PRIMARY KEY"

@@ -1,0 +1,6 @@
+dialect: bigquery
+supports_foreign_keys: false
+supports_clustering: true
+supports_partitioning: true
+comments_supported: true
+surrogate_key_type: "INT64"

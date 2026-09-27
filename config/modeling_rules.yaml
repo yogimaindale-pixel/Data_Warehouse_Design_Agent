@@ -1,0 +1,36 @@
+rules:
+  - id: "GRAIN-001"
+    version: 1
+    priority: 10
+    category: "grain"
+    condition: "candidate_key_uniqueness_below_threshold"
+    severity: "critical"
+    message: "Proposed grain is not unique in profiled sample."
+    action: "require_review"
+
+  - id: "REL-001"
+    version: 1
+    priority: 20
+    category: "relationship"
+    condition: "direct_fact_to_fact_join"
+    severity: "critical"
+    message: "Direct fact-to-fact relationship detected without dimension."
+    action: "block"
+
+  - id: "SCD-001"
+    version: 1
+    priority: 30
+    category: "scd"
+    condition: "scd2_missing_validity_columns"
+    severity: "critical"
+    message: "SCD Type 2 dimension lacks effective_date, expiration_date, or is_current columns."
+    action: "block"
+
+  - id: "STTM-001"
+    version: 1
+    priority: 40
+    category: "sttm"
+    condition: "sttm_target_missing_in_ddl"
+    severity: "critical"
+    message: "Source-to-Target mapping target column does not exist in target DDL."
+    action: "block"
