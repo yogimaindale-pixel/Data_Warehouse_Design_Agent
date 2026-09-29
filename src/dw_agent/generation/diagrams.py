@@ -1,17 +1,30 @@
-"""Mermaid diagram generator for conceptual, logical, and physical models."""
+# Module docstring explaining Mermaid diagram text generation for ER modeling
+"""Mermaid diagram generator producing conceptual, logical, and physical Entity-Relationship (ER) model diagrams."""
 
+# Import List and Tuple type hints
 from typing import List, Tuple
+# Import contract dataclasses
 from dw_agent.contracts import DimensionSpec, FactSpec
 
+# Function generating conceptual, logical, and physical Mermaid ER diagram strings
 def generate_mermaid_models(dimensions: List[DimensionSpec], facts: List[FactSpec]) -> Tuple[str, str, str]:
-    # Conceptual Model
+    """Generate conceptual, logical, and physical Mermaid.js erDiagram markup strings.
+
+    Args:
+        dimensions (List[DimensionSpec]): Dimension specifications.
+        facts (List[FactSpec]): Fact specifications.
+
+    Returns:
+        Tuple[str, str, str]: Tuple of (conceptual_mermaid_string, logical_mermaid_string, physical_mermaid_string).
+    """
+    # 1. Conceptual Model (High-level entity relationship connections)
     conceptual = []
     conceptual.append("erDiagram")
     for f in facts:
         for fk in f.foreign_keys:
             conceptual.append(f"    {f.table_name.upper()} }}|--|| {fk['target_dim'].upper()} : \"references\"")
 
-    # Logical Model
+    # 2. Logical Model (Entity attributes, PK/FK declarations, business keys)
     logical = []
     logical.append("erDiagram")
     for d in dimensions:
@@ -31,7 +44,7 @@ def generate_mermaid_models(dimensions: List[DimensionSpec], facts: List[FactSpe
         for fk in f.foreign_keys:
             logical.append(f"    {f.table_name.upper()} }}|--|| {fk['target_dim'].upper()} : \"has\"")
 
-    # Physical Model
+    # 3. Physical Model (Exact SQL data types, surrogate keys, table constraints)
     physical = []
     physical.append("erDiagram")
     for d in dimensions:
@@ -53,3 +66,4 @@ def generate_mermaid_models(dimensions: List[DimensionSpec], facts: List[FactSpe
             physical.append(f"    {f.table_name} }}|--|| {fk['target_dim']} : \"FK\"")
 
     return "\n".join(conceptual), "\n".join(logical), "\n".join(physical)
+

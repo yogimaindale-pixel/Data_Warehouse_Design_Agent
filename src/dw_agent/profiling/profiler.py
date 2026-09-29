@@ -1,24 +1,43 @@
-"""Main profiler for sample CSV and SQLite files."""
+# Module docstring explaining data profiling logic for CSV and SQLite sample datasets
+"""Main profiler computing row counts, column metrics, null ratios, min/max values, candidate natural keys, and PII flags."""
 
+# Import os module for path joining and directory scanning
 import os
+# Import csv module for reading sample CSV files
 import csv
+# Import sqlite3 module for profiling SQLite database files
 import sqlite3
+# Import List and Dict type hints
 from typing import List, Dict
+# Import ProfileResult dataclass contract
 from dw_agent.contracts import ProfileResult
+# Import key discovery helper function
 from dw_agent.profiling.key_discovery import discover_candidate_keys
+# Import PII detection helper function
 from dw_agent.profiling.quality_profiler import detect_pii_candidates
 
+# Master profiling function scanning 'inputs/sample_data/' directory
 def profile_sample_data(project_path: str) -> List[ProfileResult]:
+    """Profile sample datasets (CSV files and SQLite DBs) in 'inputs/sample_data/'.
+
+    Args:
+        project_path (str): Root path of the project.
+
+    Returns:
+        List[ProfileResult]: List of ProfileResult objects containing table-level and column-level metrics.
+    """
     sample_dir = os.path.join(project_path, "inputs", "sample_data")
     results: List[ProfileResult] = []
 
+    # Return empty list if sample_data folder does not exist
     if not os.path.exists(sample_dir):
         return results
 
+    # Iterate through sample data files
     for fname in os.listdir(sample_dir):
         fpath = os.path.join(sample_dir, fname)
         
-        # CSV Profiling
+        # 1. Profile CSV sample data files
         if fname.endswith(".csv"):
             tbl_name = os.path.splitext(fname)[0]
             with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
@@ -30,6 +49,7 @@ def profile_sample_data(project_path: str) -> List[ProfileResult]:
                 total_rows = len(rows)
 
                 col_stats = {}
+                # Calculate per-column profiling statistics
                 for idx, h in enumerate(headers):
                     col_vals = [r[idx] for r in rows if idx < len(r)]
                     null_cnt = sum(1 for v in col_vals if v is None or v.strip() == "")
@@ -46,7 +66,9 @@ def profile_sample_data(project_path: str) -> List[ProfileResult]:
                         "max_val": max_val
                     }
 
+                # Discover candidate unique natural keys
                 keys = discover_candidate_keys(col_stats, total_rows)
+                # Detect PII candidate columns
                 pii = detect_pii_candidates(headers)
 
                 results.append(
@@ -59,7 +81,7 @@ def profile_sample_data(project_path: str) -> List[ProfileResult]:
                     )
                 )
 
-        # SQLite Profiling
+        # 2. Profile SQLite sample database files
         elif fname.endswith(".db") or fname.endswith(".sqlite"):
             try:
                 conn = sqlite3.connect(fpath)
@@ -107,3 +129,4 @@ def profile_sample_data(project_path: str) -> List[ProfileResult]:
                 pass
 
     return results
+

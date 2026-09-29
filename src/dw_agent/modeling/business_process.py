@@ -1,14 +1,28 @@
-"""Business process identifier."""
+# Module docstring explaining business process discovery and fact table classification
+"""Business process identifier mapping source tables and requirements to Kimball business processes."""
 
+# Import List type hint
 from typing import List
+# Import BusinessProcess, Requirement, and SourceTable contract dataclasses
 from dw_agent.contracts import Requirement, SourceTable, BusinessProcess
 
+# Function identifying business processes from source tables and requirements
 def identify_business_processes(requirements: List[Requirement], source_tables: List[SourceTable]) -> List[BusinessProcess]:
+    """Identify business processes suitable for dimensional modeling from source tables and requirements.
+
+    Args:
+        requirements (List[Requirement]): List of parsed business requirements.
+        source_tables (List[SourceTable]): List of parsed source database tables.
+
+    Returns:
+        List[BusinessProcess]: List of proposed BusinessProcess objects.
+    """
     processes: List[BusinessProcess] = []
     
-    # Map from source tables or requirements to business processes
+    # Map lowercase source table names to table objects for quick lookup
     table_map = {t.name.lower(): t for t in source_tables}
     
+    # Process 1: E-commerce Order Placement & Sales (Transaction Fact)
     if "orders" in table_map or "order_items" in table_map or "sales" in table_map:
         processes.append(
             BusinessProcess(
@@ -22,6 +36,7 @@ def identify_business_processes(requirements: List[Requirement], source_tables: 
             )
         )
 
+    # Process 2: Banking Credit Risk & Loan Performance (Periodic Snapshot Fact)
     if "credit_risk" in table_map or "loans" in table_map or "loan_applications" in table_map or "account_snapshots" in table_map:
         processes.append(
             BusinessProcess(
@@ -35,8 +50,8 @@ def identify_business_processes(requirements: List[Requirement], source_tables: 
             )
         )
 
+    # Fallback Process: Generic Business Transactions
     if not processes:
-        # Generic process based on first available table or default
         src_names = [t.name for t in source_tables] or ["transactions"]
         processes.append(
             BusinessProcess(
@@ -51,3 +66,4 @@ def identify_business_processes(requirements: List[Requirement], source_tables: 
         )
 
     return processes
+

@@ -1,10 +1,25 @@
-"""Grain declaration engine enforcing one row per event/entity sentence rule."""
+# Module docstring explaining atomic grain declaration and sample data uniqueness checking
+"""Grain declaration engine enforcing the single-sentence grain declaration rule for every fact table."""
 
+# Import List type hint
 from typing import List
+# Import contract dataclasses
 from dw_agent.contracts import BusinessProcess, GrainDeclaration, ProfileResult, SourceTable
+# Import fact table naming formatter
 from dw_agent.modeling.naming import format_fact_table_name
 
+# Main grain declaration function constructing GrainDeclaration objects for each business process
 def declare_grains(processes: List[BusinessProcess], source_tables: List[SourceTable], profiles: List[ProfileResult]) -> List[GrainDeclaration]:
+    """Declare formal single-sentence atomic grains for all proposed fact tables and check sample key uniqueness.
+
+    Args:
+        processes (List[BusinessProcess]): List of identified business processes.
+        source_tables (List[SourceTable]): List of source table objects.
+        profiles (List[ProfileResult]): Data profiling metrics from sample CSV/DB files.
+
+    Returns:
+        List[GrainDeclaration]: List of GrainDeclaration objects.
+    """
     grains: List[GrainDeclaration] = []
     
     for bp in processes:
@@ -13,6 +28,7 @@ def declare_grains(processes: List[BusinessProcess], source_tables: List[SourceT
         keys = []
         is_unique = True
 
+        # Formulate grain sentence based on proposed fact table type
         if bp.proposed_fact_type == "transaction":
             if "order_items" in bp.source_tables:
                 grain_sentence = "One row per order line item at order placement time."
@@ -51,3 +67,4 @@ def declare_grains(processes: List[BusinessProcess], source_tables: List[SourceT
         )
 
     return grains
+

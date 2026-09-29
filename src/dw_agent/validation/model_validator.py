@@ -1,18 +1,34 @@
-"""Comprehensive model validator enforcing quality gates."""
+# Module docstring explaining quality gate validation rules across dimensions, facts, grains, and STTM maps
+"""Comprehensive model validator enforcing quality gates across grains, relationships, and STTM mapping coverage."""
 
+# Import List type hint
 from typing import List
+# Import contract dataclasses
 from dw_agent.contracts import DimensionSpec, FactSpec, GrainDeclaration, STTMRow, ValidationItem
+# Import relationship validator helper function
 from dw_agent.modeling.relationship_validator import validate_model_relationships
 
+# Master function running warehouse design quality gates
 def validate_warehouse_design(
     dimensions: List[DimensionSpec],
     facts: List[FactSpec],
     grains: List[GrainDeclaration],
     sttms: List[STTMRow]
 ) -> List[ValidationItem]:
+    """Execute end-to-end design quality gates checking grain completeness, FK relationships, and STTM column coverage.
+
+    Args:
+        dimensions (List[DimensionSpec]): Dimension specifications.
+        facts (List[FactSpec]): Fact specifications.
+        grains (List[GrainDeclaration]): Fact grain declarations.
+        sttms (List[STTMRow]): Source-to-Target mapping rows.
+
+    Returns:
+        List[ValidationItem]: List of validation results (info, warning, or critical items).
+    """
     items: List[ValidationItem] = []
 
-    # 1. Grain Validation: Every fact table must have a declared grain
+    # 1. Grain Validation Gate: Verify every fact table has an explicit single-sentence grain declaration
     for f in facts:
         g = next((g for g in grains if g.fact_table_name == f.table_name), None)
         if not g or not g.grain_sentence:
@@ -37,10 +53,10 @@ def validate_warehouse_design(
                 )
             )
 
-    # 2. Relationship Validation
+    # 2. Relationship Validation Gate: Verify foreign keys and SCD2 validity flags
     items.extend(validate_model_relationships(dimensions, facts))
 
-    # 3. STTM Coverage Check: Ensure all STTM target columns exist in generated model
+    # 3. STTM Coverage Gate: Verify all mapped target columns exist in generated dimension/fact DDL models
     target_cols = set()
     for d in dimensions:
         for c in d.columns:
@@ -69,3 +85,4 @@ def validate_warehouse_design(
             )
 
     return items
+

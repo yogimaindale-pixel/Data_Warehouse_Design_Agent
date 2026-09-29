@@ -1,23 +1,41 @@
-"""Command-Line Interface for Data Warehouse Design Agent."""
+# Module docstring explaining Command-Line Interface (CLI) for Data Warehouse Design Agent
+"""Command-Line Interface (CLI) module orchestrating input scanning, profiling, dimensional modeling, validation, and deliverable export."""
 
+# Import standard sys module for exit status control
 import sys
+# Import os module for directory manipulation and path joining
 import os
+# Import argparse module for parsing command line flags and subcommands
 import argparse
+# Import shutil module for deleting output folders during clean action
 import shutil
+# Import json module for serializing manifest and log objects
 import json
+# Import Path class for filesystem path operations
 from pathlib import Path
+
+# Import logger utilities
 from dw_agent.logging import setup_logging, get_logger
+# Import ConfigManager for loading YAML settings and platform profiles
 from dw_agent.config import ConfigManager
+
+# Import Discovery phase functions
 from dw_agent.discovery.inventory import scan_input_inventory
 from dw_agent.discovery.requirement_parser import parse_requirements
 from dw_agent.discovery.ddl_parser import parse_source_ddl
 from dw_agent.discovery.metadata_loader import load_source_metadata
+
+# Import Profiling phase functions
 from dw_agent.profiling.profiler import profile_sample_data
+
+# Import Dimensional Modeling engine functions
 from dw_agent.modeling.business_process import identify_business_processes
 from dw_agent.modeling.grain import declare_grains
 from dw_agent.modeling.dimension_designer import design_dimensions
 from dw_agent.modeling.fact_designer import design_facts
 from dw_agent.modeling.bus_matrix import build_bus_matrix
+
+# Import Deliverable Generation functions
 from dw_agent.generation.ddl_generator import generate_target_ddl
 from dw_agent.generation.sttm_generator import generate_sttm_mappings
 from dw_agent.generation.etl_spec_generator import generate_etl_specifications
@@ -27,44 +45,80 @@ from dw_agent.generation.diagrams import generate_mermaid_models
 from dw_agent.generation.documentation import (
     generate_executive_summary, generate_security_doc, generate_performance_doc, generate_adrs
 )
+
+# Import Validation phase functions
 from dw_agent.validation.model_validator import validate_warehouse_design
 from dw_agent.validation.sql_validator import validate_sqlite_ddl
 from dw_agent.validation.acceptance import evaluate_acceptance
+
+# Import Reporting and Review Pack functions
 from dw_agent.reporting.design_report import generate_validation_report
 from dw_agent.reporting.review_pack import generate_review_checklist
+
+# Import Exporter utility writing all 27 deliverable files to disk
 from dw_agent.generation.exporter import export_all_deliverables
 
+# Core master pipeline function executing full design workflow from inputs to deliverables
 def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
+    """Execute the end-to-end Data Warehouse Design Agent pipeline.
+
+    Args:
+        project_path (str): Path to target project folder containing input artifacts.
+        dialect (str): Target SQL dialect ('sqlite', 'postgresql', 'snowflake', 'bigquery', 'synapse').
+
+    Returns:
+        dict: Summary statistics including processed counts, validation outcomes, and acceptance status.
+    """
+    # Initialize configuration manager
     config_mgr = ConfigManager()
+    
+    # Step 1: Discover and scan input folder inventory
     inventory = scan_input_inventory(project_path)
+    # Parse business requirements and KPI specifications
     requirements = parse_requirements(project_path)
+    # Parse source DDL schema definitions
     source_tables = parse_source_ddl(project_path)
+    # Load source system metadata catalog definitions
     metadata = load_source_metadata(project_path)
+    # Step 2: Profile sample CSV data files
     profiles = profile_sample_data(project_path)
 
+    # Step 3: Dimensional Modeling Engine execution
+    # Identify business processes from requirements and source schemas
     processes = identify_business_processes(requirements, source_tables)
+    # Declare single-sentence grains for fact tables
     grains = declare_grains(processes, source_tables, profiles)
+    # Design conformed, role-playing, and SCD2 dimensions
     dimensions = design_dimensions(source_tables, requirements)
+    # Design transaction, snapshot, and factless fact tables
     facts = design_facts(processes, grains, dimensions, source_tables)
+    # Build Enterprise Bus Matrix mapping processes to dimensions
     bus_matrix = build_bus_matrix(processes, dimensions, facts)
 
+    # Step 4: Deliverable artifact generation
+    # Generate Source-to-Target Mappings (STTM)
     sttms = generate_sttm_mappings(dimensions, facts)
+    # Generate automated Data Quality check rules
     dq_rules = generate_dq_rules(dimensions, facts)
+    # Generate end-to-end data lineage records
     lineage = generate_lineage_records(dimensions, facts)
 
+    # Generate dialect-specific physical target DDL and rollback SQL
     target_sql, rollback_sql = generate_target_ddl(dimensions, facts, dialect, config_mgr)
 
-    # Validations
+    # Step 5: Quality Gate Architectural Validations
     validation_items = validate_warehouse_design(dimensions, facts, grains, sttms)
     
-    # SQLite dry-run validation
+    # Dry-run execution test of generated DDL in in-memory SQLite engine
     sql_ok, sql_msg = validate_sqlite_ddl(target_sql)
 
+    # Evaluate overall design acceptance based on critical failure counts
     is_accepted, pass_cnt, warn_cnt, fail_cnt = evaluate_acceptance(validation_items)
 
+    # Define target output directory path
     output_dir = os.path.join(project_path, "output")
 
-    # Format rows for export
+    # Format structured table rows for export writers
     inv_rows = [[i.file_path, i.file_type, i.file_hash, i.size_bytes] for i in inventory]
     req_rows = [[r.req_id, r.category, r.title, r.description, r.source_file] for r in requirements]
     
@@ -95,6 +149,7 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
         for m in f.measures:
             fact_rows.append([f.table_name, f.process_id, f.fact_type, f.grain_sentence, m.name, m.formula, m.additivity])
 
+    # Generate Mermaid ER diagrams (conceptual, logical, physical)
     conceptual_mmd, logical_mmd, physical_mmd = generate_mermaid_models(dimensions, facts)
     sttm_export = [[s.mapping_id, s.target_table, s.target_column, s.source_system, s.source_table, s.source_column, s.transformation, s.lookup_rule, s.default_rule, s.rejection_behavior, s.dq_rule_ids, s.scd_behavior, s.req_id] for s in sttms]
     etl_spec_md = generate_etl_specifications(dimensions, facts)
@@ -115,6 +170,7 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
         ["TSK-003", "BI Development", "Build executive reporting dashboards", "Medium", "12"]
     ]
 
+    # Construct execution manifest metadata dictionary
     manifest = {
         "project": project_path,
         "dialect": dialect,
@@ -124,7 +180,7 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
         "deliverables_count": 27
     }
 
-    # Write all deliverables
+    # Export all 27 deliverable files into project output folder
     export_all_deliverables(
         output_dir=output_dir,
         exec_summary_md=generate_executive_summary(dimensions, facts, requirements, is_accepted),
@@ -158,6 +214,7 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
         manifest_data=manifest
     )
 
+    # Return summary metric statistics dictionary
     return {
         "inventory_count": len(inventory),
         "profiled_count": len(profiles),
@@ -169,65 +226,72 @@ def run_design_pipeline(project_path: str, dialect: str = "sqlite") -> dict:
         "is_accepted": is_accepted
     }
 
+# Main CLI entrypoint function handling argument parsing and subcommand execution
 def main():
+    """Main CLI entrypoint function parsing command-line options and dispatching actions."""
     parser = argparse.ArgumentParser(prog="dw_agent", description="Data Warehouse Design Agent CLI")
     parser.add_argument("--quiet", action="store_true", help="Minimal console output")
     parser.add_argument("--verbose", action="store_true", help="Verbose debug logging")
     parser.add_argument("--json-log", action="store_true", help="Output JSON lines logging")
 
+    # Register subcommand parsers
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
 
-    # init
+    # 'init' subcommand
     p_init = subparsers.add_parser("init", help="Initialize a project folder structure")
     p_init.add_argument("--project", default="./sample_project", help="Project path")
 
-    # inspect
+    # 'inspect' subcommand
     p_inspect = subparsers.add_parser("inspect", help="Inspect project inputs")
     p_inspect.add_argument("--project", default=".", help="Project path")
 
-    # profile
+    # 'profile' subcommand
     p_profile = subparsers.add_parser("profile", help="Profile sample data")
     p_profile.add_argument("--project", default=".", help="Project path")
 
-    # design
+    # 'design' subcommand
     p_design = subparsers.add_parser("design", help="Generate warehouse design deliverables")
     p_design.add_argument("--project", default=".", help="Project path")
     p_design.add_argument("--dialect", default="sqlite", choices=["sqlite", "postgresql", "snowflake", "bigquery", "synapse"], help="Target SQL dialect")
 
-    # validate
+    # 'validate' subcommand
     p_validate = subparsers.add_parser("validate", help="Validate design against quality gates")
     p_validate.add_argument("--project", default=".", help="Project path")
 
-    # report
+    # 'report' subcommand
     p_report = subparsers.add_parser("report", help="Print summary report of design package")
     p_report.add_argument("--project", default=".", help="Project path")
 
-    # demo
+    # 'demo' subcommand
     p_demo = subparsers.add_parser("demo", help="Run a seeded demonstration scenario")
     p_demo.add_argument("--scenario", default="ecommerce", choices=["ecommerce", "bfs-credit-risk"], help="Demo scenario")
 
-    # explain
+    # 'explain' subcommand
     p_explain = subparsers.add_parser("explain", help="Explain an artifact or decision rule")
     p_explain.add_argument("--artifact", default="bus-matrix", help="Artifact to explain")
 
-    # diff
+    # 'diff' subcommand
     p_diff = subparsers.add_parser("diff", help="Compare baseline and candidate project outputs")
     p_diff.add_argument("--baseline", required=True, help="Baseline path")
     p_diff.add_argument("--candidate", required=True, help="Candidate path")
 
-    # clean
+    # 'clean' subcommand
     p_clean = subparsers.add_parser("clean", help="Clean generated output folder")
     p_clean.add_argument("--project", default=".", help="Project path")
 
+    # Parse command line arguments
     args = parser.parse_args()
 
+    # Configure logger based on verbosity options
     logger = setup_logging(verbose=args.verbose, quiet=args.quiet, json_log=args.json_log)
 
+    # If no subcommand provided, print help menu and exit
     if not args.command:
         parser.print_help()
         return 0
 
     try:
+        # Action handler for 'init' subcommand
         if args.command == "init":
             p = Path(args.project)
             for sub in ["inputs/requirements", "inputs/source_ddl", "inputs/source_metadata", "inputs/sample_data", "inputs/kpi_inventory", "output"]:
@@ -235,16 +299,19 @@ def main():
             logger.info(f"[INIT] Project initialized at {p.resolve()}")
             return 0
 
+        # Action handler for 'inspect' subcommand
         elif args.command == "inspect":
             inv = scan_input_inventory(args.project)
             logger.info(f"[DISCOVER] {len(inv)} input files found")
             return 0
 
+        # Action handler for 'profile' subcommand
         elif args.command == "profile":
             profiles = profile_sample_data(args.project)
             logger.info(f"[PROFILE] {len(profiles)} source tables profiled")
             return 0
 
+        # Action handler for 'design', 'validate', and 'report' subcommands
         elif args.command in ["design", "validate", "report"]:
             res = run_design_pipeline(args.project, getattr(args, "dialect", "sqlite"))
             logger.info(f"[DISCOVER] {res['inventory_count']} input files found")
@@ -258,8 +325,9 @@ def main():
             logger.info("[RESULT] Design package generated and validated successfully.")
             return 0
 
+        # Action handler for 'demo' subcommand
         elif args.command == "demo":
-            # Run seeded demo logic
+            # Seed demo project files and run full pipeline
             from scripts.seed_demo import seed_demo_project
             demo_path = f"./demo_{args.scenario.replace('-', '_')}"
             seed_demo_project(demo_path, args.scenario)
@@ -272,6 +340,7 @@ def main():
             logger.info(f"[DEMO] Scenario '{args.scenario}' completed successfully at {demo_path}")
             return 0
 
+        # Action handler for 'explain' subcommand
         elif args.command == "explain":
             target = args.artifact.lower().strip()
             explanations = {
@@ -294,6 +363,7 @@ def main():
             logger.info(f"[EXPLAIN] {target.upper()}: {exp_text}")
             return 0
 
+        # Action handler for 'diff' subcommand
         elif args.command == "diff":
             b_path = Path(args.baseline)
             c_path = Path(args.candidate)
@@ -335,6 +405,7 @@ def main():
                 logger.info(f"[DIFF] Comparison complete: {diff_count} files differed in size.")
             return 0
 
+        # Action handler for 'clean' subcommand
         elif args.command == "clean":
             out = os.path.join(args.project, "output")
             if os.path.exists(out):
@@ -348,6 +419,8 @@ def main():
 
     return 0
 
+# Execute main function when script is run directly from terminal
 if __name__ == "__main__":
     sys.exit(main())
+
 

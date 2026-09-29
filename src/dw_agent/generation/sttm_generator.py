@@ -1,13 +1,26 @@
-"""Source-to-Target Mapping (STTM) generator."""
+# Module docstring explaining Source-to-Target Mapping (STTM) row generation
+"""STTM mapping generator producing column-level source-to-target field mappings, transformations, lookup rules, and DQ cross-references."""
 
+# Import List type hint
 from typing import List
+# Import contract dataclasses
 from dw_agent.contracts import DimensionSpec, FactSpec, STTMRow
 
+# Main STTM generation function
 def generate_sttm_mappings(dimensions: List[DimensionSpec], facts: List[FactSpec]) -> List[STTMRow]:
+    """Generate detailed Source-to-Target Mapping (STTM) rows for all dimension attributes and fact measures/FKs.
+
+    Args:
+        dimensions (List[DimensionSpec]): Dimension specifications.
+        facts (List[FactSpec]): Fact specifications.
+
+    Returns:
+        List[STTMRow]: List of constructed STTMRow dataclass instances.
+    """
     rows: List[STTMRow] = []
     map_idx = 1
 
-    # Dimension STTMs
+    # 1. Generate STTM mappings for Dimension tables and columns
     for d in dimensions:
         for c in d.columns:
             rows.append(
@@ -29,8 +42,9 @@ def generate_sttm_mappings(dimensions: List[DimensionSpec], facts: List[FactSpec
             )
             map_idx += 1
 
-    # Fact STTMs
+    # 2. Generate STTM mappings for Fact tables (Foreign Keys and Measures)
     for f in facts:
+        # Foreign Key SK Lookups
         for fk in f.foreign_keys:
             rows.append(
                 STTMRow(
@@ -51,6 +65,7 @@ def generate_sttm_mappings(dimensions: List[DimensionSpec], facts: List[FactSpec
             )
             map_idx += 1
 
+        # Fact Numeric Measures
         for m in f.measures:
             rows.append(
                 STTMRow(
@@ -72,3 +87,4 @@ def generate_sttm_mappings(dimensions: List[DimensionSpec], facts: List[FactSpec
             map_idx += 1
 
     return rows
+

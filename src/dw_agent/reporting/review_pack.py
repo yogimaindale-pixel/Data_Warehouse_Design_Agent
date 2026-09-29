@@ -1,6 +1,9 @@
-"""Review checklist generator."""
+# Module docstring explaining review checklist markdown generation
+"""Review checklist generator creating architecture and governance sign-off criteria."""
 
+# Function generating governance sign-off review checklist Markdown text
 def generate_review_checklist() -> str:
+    """Generate executive architectural sign-off checklist markdown text."""
     return """# Data Warehouse Design Review Checklist
 
 ## Architectural & Governance Sign-Off
@@ -12,3 +15,4 @@ def generate_review_checklist() -> str:
 - [ ] **Data Quality Rules**: DQ threshold controls and quarantine actions are approved by governance.
 - [ ] **Physical DDL Execution**: Target DDL parses and runs cleanly without syntax errors on target platform.
 """
+

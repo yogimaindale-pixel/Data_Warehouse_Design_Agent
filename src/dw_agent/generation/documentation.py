@@ -1,14 +1,29 @@
-"""Documentation generator for executive summary, traceability, ADRs, performance, and review package."""
+# Module docstring explaining documentation generator for executive summaries, security profiles, performance tuning, and ADRs
+"""Documentation generator creating Executive Summary, Security & Privacy Design, Performance Tuning, and Architecture Decision Records (ADR) markdown documents."""
 
+# Import List, Dict, and Any type hints
 from typing import List, Dict, Any
+# Import contract dataclasses
 from dw_agent.contracts import DimensionSpec, FactSpec, Requirement
 
+# Executive summary markdown generator function
 def generate_executive_summary(
     dimensions: List[DimensionSpec],
     facts: List[FactSpec],
     requirements: List[Requirement],
     validation_passed: bool
 ) -> str:
+    """Generate high-level Executive Summary markdown outlining project metrics and validation status.
+
+    Args:
+        dimensions (List[DimensionSpec]): Designed dimensions.
+        facts (List[FactSpec]): Designed facts.
+        requirements (List[Requirement]): Parsed requirements.
+        validation_passed (bool): Whether model passed all quality gate checks.
+
+    Returns:
+        str: Executive summary markdown string.
+    """
     status_str = "ACCEPTED & PASS" if validation_passed else "REVIEW REQUIRED / BLOCKED"
     lines = []
     lines.append("# Executive Summary: Data Warehouse Design Package\n")
@@ -23,7 +38,9 @@ def generate_executive_summary(
     lines.append("- **Multi-Dialect DDL**: Physical SQL generated for SQLite, PostgreSQL, Snowflake, BigQuery, and Synapse.\n")
     return "\n".join(lines)
 
+# Security & Privacy markdown documentation generator
 def generate_security_doc() -> str:
+    """Generate Security & Privacy Design Considerations markdown detailing PII handling and RBAC rules."""
     return """# Security & Privacy Design Considerations
 
 ## 1. PII & Sensitive Data Governance
@@ -39,7 +56,9 @@ def generate_security_doc() -> str:
   - **Governance Officers**: Audit log read access.
 """
 
+# Performance design recommendations markdown generator
 def generate_performance_doc() -> str:
+    """Generate Performance Design & Optimization Recommendations markdown detailing partitioning, indexing, and clustering strategies."""
     return """# Performance Design & Optimization Recommendations
 
 ## 1. Indexing & Partitioning Strategy
@@ -51,7 +70,9 @@ def generate_performance_doc() -> str:
 - Periodic snapshot facts pre-aggregate high-frequency transaction events to ensure fast sub-second dashboard rendering for executive KPIs.
 """
 
+# Architectural Decision Records (ADRs) markdown generator
 def generate_adrs() -> str:
+    """Generate Architecture Decision Records (ADR) markdown document documenting key design trade-offs."""
     return """# Architecture Decision Records (ADR)
 
 ## ADR-001: Integer Auto-Increment Surrogate Keys
@@ -66,3 +87,4 @@ def generate_adrs() -> str:
 - **Decision**: All modeling rules, validations, and mappings are executed via deterministic Python rules.
 - **Consequences**: 100% reproducible outputs across reruns with clear evidence chains.
 """
+

@@ -1,17 +1,32 @@
-"""Requirement parser for extracting KPIs, questions, dimensions, and security requirements."""
+# Module docstring explaining business requirements and KPI parsing from input files
+"""Requirement parser extracting KPIs, business questions, and security specifications from Markdown and CSV files."""
 
+# Import os module for path operations and directory listing
 import os
+# Import re module for regex pattern matching across text lines
 import re
+# Import csv module for reading KPI inventory CSV files
 import csv
+# Import List type hint
 from typing import List
+# Import Requirement dataclass contract
 from dw_agent.contracts import Requirement
 
+# Main requirement parser function reading input requirement folders
 def parse_requirements(project_path: str) -> List[Requirement]:
+    """Parse business requirements and KPI definitions from 'inputs/requirements/' and 'inputs/kpi_inventory/'.
+
+    Args:
+        project_path (str): Path to root project folder.
+
+    Returns:
+        List[Requirement]: List of parsed Requirement objects.
+    """
     req_dir = os.path.join(project_path, "inputs", "requirements")
     kpi_dir = os.path.join(project_path, "inputs", "kpi_inventory")
     requirements: List[Requirement] = []
     
-    # Parse Markdown/TXT requirements
+    # 1. Parse Markdown/TXT requirement specification documents
     if os.path.exists(req_dir):
         for fname in os.listdir(req_dir):
             fpath = os.path.join(req_dir, fname)
@@ -21,14 +36,16 @@ def parse_requirements(project_path: str) -> List[Requirement]:
             with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
             
-            # Simple header / bullet parser
+            # Parse headers and bullet points
             lines = content.splitlines()
             current_req_id = 1
             for line in lines:
                 line_str = line.strip()
+                # Match bullet lists ('- ', '* ') or numbered items ('1. ')
                 if line_str.startswith("- ") or line_str.startswith("* ") or re.match(r"^\d+\.", line_str):
                     clean_text = re.sub(r"^[-*\d.]+\s*", "", line_str)
                     cat = "KPI"
+                    # Classify category based on keywords
                     if "security" in clean_text.lower() or "pii" in clean_text.lower():
                         cat = "Security"
                     elif "history" in clean_text.lower() or "scd" in clean_text.lower():
@@ -47,7 +64,7 @@ def parse_requirements(project_path: str) -> List[Requirement]:
                     )
                     current_req_id += 1
 
-    # Parse KPI CSV inventory
+    # 2. Parse structured KPI CSV inventory files
     if os.path.exists(kpi_dir):
         for fname in os.listdir(kpi_dir):
             if fname.endswith(".csv"):
@@ -70,8 +87,8 @@ def parse_requirements(project_path: str) -> List[Requirement]:
                         )
                         req_idx += 1
 
+    # 3. Fallback default requirement if no requirement files were provided
     if not requirements:
-        # Default fallback requirement if folder was empty
         requirements.append(
             Requirement(
                 req_id="REQ-GEN-001",
@@ -83,3 +100,4 @@ def parse_requirements(project_path: str) -> List[Requirement]:
         )
 
     return requirements
+

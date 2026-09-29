@@ -168,12 +168,14 @@ PYTHONPATH=src:. ./venv/bin/pytest tests/ -v
 
 ---
 
-## 📚 Knowledge Transfer & Documentation
+## 📚 Technical Documentation & Knowledge Transfer
 
-Full step-by-step Knowledge Transfer documentation is available in the [`knowledge-transfer/`](file:///config/Desktop/Session3/knowledge-transfer/) folder, covering architecture, command reference, operations runbook, troubleshooting guide, security, and extension guides.
+- 📘 **[DOCUMENTATION.md](file:///config/Desktop/Data_Warehouse_Design_Agent/DOCUMENTATION.md)**: Technical requirements, 6-stage pipeline architecture, deliverable schemas, quality gates, and Kimball business rules.
+- 🎓 **[KNOWLEDGE_TRANSFER.md](file:///config/Desktop/Data_Warehouse_Design_Agent/KNOWLEDGE_TRANSFER.md)**: Junior-friendly core concepts guide, codebase sitemap, step-by-step hands-on tutorials, and FAQ.
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License.
+

@@ -1,9 +1,22 @@
-"""ETL specifications markdown generator."""
+# Module docstring explaining ETL load specifications document generation
+"""ETL specifications markdown generator detailing load order, SCD Type 1/2 processing strategies, late-arriving dimensions, and restartability."""
 
+# Import List type hint
 from typing import List
+# Import DimensionSpec and FactSpec contract dataclasses
 from dw_agent.contracts import DimensionSpec, FactSpec
 
+# Function generating ETL architecture and pipeline specification Markdown document
 def generate_etl_specifications(dimensions: List[DimensionSpec], facts: List[FactSpec]) -> str:
+    """Generate comprehensive ETL Architecture & Load Specifications markdown text.
+
+    Args:
+        dimensions (List[DimensionSpec]): Designed dimension specifications.
+        facts (List[FactSpec]): Designed fact specifications.
+
+    Returns:
+        str: Markdown documentation string detailing ETL pipeline logic.
+    """
     lines = []
     lines.append("# ETL Architecture & Load Specifications\n")
     lines.append("## 1. Load Execution Order")
@@ -34,3 +47,4 @@ def generate_etl_specifications(dimensions: List[DimensionSpec], facts: List[Fac
         lines.append("- **Idempotency & Restartability**: All loads execute via staging MERGE/UPSERT or DELETE-INSERT on batch partition ID.\n")
 
     return "\n".join(lines)
+

@@ -1,10 +1,21 @@
-"""Seeder for e-commerce and BFS credit-risk demo scenarios."""
+# Module docstring explaining demo project seeder script
+"""Seeder script generating input requirements, source DDLs, and sample CSV/SQLite data for E-Commerce and BFS Credit Risk scenarios."""
 
+# Import os for directory creation and file path handling
 import os
+# Import csv for writing sample CSV dataset files
 import csv
+# Import sqlite3 for creating sample SQLite database files
 import sqlite3
 
+# Seeder function writing sample inputs directory tree
 def seed_demo_project(project_path: str, scenario: str = "ecommerce"):
+    """Create input folder structure and seed source DDL, requirements, and sample data.
+
+    Args:
+        project_path (str): Target project folder path.
+        scenario (str, optional): Demo scenario ('ecommerce' or 'bfs-credit-risk'). Defaults to "ecommerce".
+    """
     os.makedirs(os.path.join(project_path, "inputs", "requirements"), exist_ok=True)
     os.makedirs(os.path.join(project_path, "inputs", "source_ddl"), exist_ok=True)
     os.makedirs(os.path.join(project_path, "inputs", "source_metadata"), exist_ok=True)
@@ -12,14 +23,14 @@ def seed_demo_project(project_path: str, scenario: str = "ecommerce"):
     os.makedirs(os.path.join(project_path, "inputs", "kpi_inventory"), exist_ok=True)
 
     if scenario == "ecommerce":
-        # Requirements
+        # Write E-Commerce Business Requirements Markdown
         with open(os.path.join(project_path, "inputs", "requirements", "ecom_reqs.md"), "w") as f:
             f.write("# E-Commerce Analytical Requirements\n")
             f.write("- Track total revenue and order line quantities by product category and customer region.\n")
             f.write("- Maintain customer address change history using SCD Type 2.\n")
             f.write("- PII Security: Customer email and address must be masked in reporting views.\n")
 
-        # Source DDL
+        # Write E-Commerce Source SQL DDL
         with open(os.path.join(project_path, "inputs", "source_ddl", "ecom_source.sql"), "w") as f:
             f.write("""
 CREATE TABLE customers (
@@ -55,7 +66,7 @@ CREATE TABLE order_items (
 );
 """)
 
-        # Sample CSV Data
+        # Write Sample E-Commerce CSV Data Files
         with open(os.path.join(project_path, "inputs", "sample_data", "customers.csv"), "w", newline="") as f:
             w = csv.writer(f)
             w.writerow(["customer_id", "first_name", "last_name", "email", "address", "region"])
@@ -75,13 +86,13 @@ CREATE TABLE order_items (
             w.writerow(["ORD-9001", "ITEM-2", "PROD-102", "2", "25.00"])
 
     elif scenario == "bfs-credit-risk":
-        # Requirements
+        # Write Banking Financial Services (BFS) Requirements Markdown
         with open(os.path.join(project_path, "inputs", "requirements", "bfs_reqs.md"), "w") as f:
             f.write("# BFS Credit Risk Analytical Requirements\n")
             f.write("- Provide daily snapshot of loan account principal balance, accrued interest, and delinquent loan counts.\n")
             f.write("- Track borrower risk rating changes over time.\n")
 
-        # Source DDL
+        # Write BFS Source SQL DDL
         with open(os.path.join(project_path, "inputs", "source_ddl", "bfs_source.sql"), "w") as f:
             f.write("""
 CREATE TABLE borrowers (
@@ -103,7 +114,7 @@ CREATE TABLE account_snapshots (
 );
 """)
 
-        # Sample SQLite DB
+        # Seed Sample BFS SQLite Database
         db_path = os.path.join(project_path, "inputs", "sample_data", "bfs_data.sqlite")
         conn = sqlite3.connect(db_path)
         cur = conn.cursor()
@@ -114,8 +125,10 @@ CREATE TABLE account_snapshots (
         conn.commit()
         conn.close()
 
+# CLI entrypoint for manual seeding execution
 if __name__ == "__main__":
     import sys
     scen = sys.argv[1] if len(sys.argv) > 1 else "ecommerce"
     seed_demo_project("./sample_project", scen)
     print(f"Seeded demo scenario '{scen}' at ./sample_project")
+
