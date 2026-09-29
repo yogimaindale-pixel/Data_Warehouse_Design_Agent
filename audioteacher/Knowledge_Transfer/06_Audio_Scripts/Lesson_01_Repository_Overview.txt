@@ -1,0 +1,7 @@
+Welcome back student. Today we are going to explore the Data Warehouse Design Agent repository.
+Designing data warehouses manually takes weeks of data engineering effort.
+This repository automates the entire architectural design workflow using an AI-assisted pipeline engine.
+It ingests raw source DDLs and requirements, and generates 27 production-ready DWH deliverables in seconds.
+Let's pause and understand this with an example. Think of this agent as an automated software compiler, but instead of compiling code into machine binaries, it compiles raw relational tables into Kimball dimensional star schemas.
+Now let's see where this appears in the repository. The master orchestrator function is run_design_pipeline located in src dw_agent cli dot py.
+Congratulations, you now understand the purpose and architecture of the Data Warehouse Design Agent!

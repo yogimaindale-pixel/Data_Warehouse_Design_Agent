@@ -1,0 +1,10 @@
+Welcome back student. Today we are going to practice answering technical interview questions based on this repository.
+Question one: How does the agent ensure 100 percent traceability from raw requirements to target DDLs?
+Spoken answer: The agent maintains strongly-typed dataclasses in contracts dot py, linking requirement IDs to source columns, STTM rows, and target DDL statements.
+Question two: How does the agent enforce Kimball dimensional modeling standards?
+Spoken answer: The modeling engine separates descriptive entity attributes into conformed dimensions, assigns surrogate keys, constructs a Bus Matrix, and links measures in fact tables.
+Question three: How do you validate generated data warehouse designs before deployment?
+Spoken answer: We run model_validator dot py to check grain consistency, surrogate key uniqueness, and verify zero orphan fact relationships.
+Let's pause and understand this with an example. Demonstrating automated design validation highlights senior architectural maturity in data engineering interviews.
+Now let's see where this appears in the repository. Model validation rules are defined in src dw_agent validation model_validator dot py.
+Congratulations, you now understand how to confidently explain and defend this repository in technical interviews!

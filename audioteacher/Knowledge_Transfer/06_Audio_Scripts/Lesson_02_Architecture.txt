@@ -1,0 +1,9 @@
+Welcome back student. Today we are going to examine the 5-stage pipeline architecture of the Data Warehouse Design Agent.
+Stage one is Discovery, which parses raw source SQL DDLs and requirements files.
+Stage two is Profiling, which analyzes sample data to compute null rates, cardinality, and candidate PII columns.
+Stage three is Modeling, which designs conformed dimensions, facts, and Kimball Bus Matrices.
+Stage four is Generation, which produces dialect-specific target DDLs and STTM workbooks.
+Stage five is Validation, which evaluates schema rules and requirements coverage.
+Let's pause and understand this with an example. Each stage acts as an assembly line station where raw data engineering specifications are progressively refined into clean architectural blueprints.
+Now let's see where this appears in the repository. Discovery is in src dw_agent discovery, modeling is in src dw_agent modeling, and generation is in src dw_agent generation.
+Congratulations, you now understand the 5-stage automated architecture pipeline!

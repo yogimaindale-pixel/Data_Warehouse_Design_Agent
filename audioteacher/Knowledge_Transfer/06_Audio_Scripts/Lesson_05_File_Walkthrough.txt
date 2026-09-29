@@ -1,0 +1,7 @@
+Welcome back student. Today we are going to walk through the repository file structure and key modules.
+The src dw_agent package contains 6 specialized directories.
+discovery handles schema parsing, profiling analyzes data quality, modeling designs star schemas, generation compiles DDLs, validation enforces rules, and reporting exports review packages.
+Configuration rules are stored as human-readable PyYAML files inside the config folder.
+Let's pause and understand this with an example. Separating discovery, modeling, and generation allows data architects to swap target dialects without rewriting dimensional modeling rules.
+Now let's see where this appears in the repository. Dialect profiles are stored in config platform_profiles sqlite dot yaml and snowflake dot yaml.
+Congratulations, you now understand the codebase organization and module responsibilities!

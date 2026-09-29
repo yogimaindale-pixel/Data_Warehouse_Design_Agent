@@ -1,0 +1,8 @@
+Welcome back student. Today we are going to trace the exact execution sequence when running the CLI.
+Execution starts in src dw_agent main dot py, which delegates to cli dot py.
+main parses CLI arguments such as input directory and target platform.
+run_design_pipeline initializes ConfigManager, loads platform mappings, and calls discovery, profiling, modeling, generation, and validation sequentially.
+Finally, export_all_deliverables writes 27 output files to the output folder.
+Let's pause and understand this with an example. If validation fails due to orphan facts or missing primary keys, the pipeline halts and reports exact line errors before writing target DDLs.
+Now let's see where this appears in the repository. CLI dispatching is handled in src dw_agent cli dot py between lines 62 and 227.
+Congratulations, you now understand the complete CLI execution flow!

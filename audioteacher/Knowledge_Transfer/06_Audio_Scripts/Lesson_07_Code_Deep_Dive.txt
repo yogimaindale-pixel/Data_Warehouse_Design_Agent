@@ -1,0 +1,7 @@
+Welcome back student. Today we are going to perform a code deep dive into the dimensional modeling engine.
+In dimension_designer dot py, the function design_dimensions scans source tables for entity descriptors.
+It extracts business keys, appends surrogate keys with the naming standard format_surrogate_key, and attaches SCD Type 2 tracking flags.
+In fact_designer dot py, the function design_facts identifies numeric measures, assigns additive aggregation types, and attaches foreign key surrogate links to conformed dimensions.
+Let's pause and understand this with an example. Creating surrogate keys decouples the Data Warehouse from changes in operational source system IDs.
+Now let's see where this appears in the repository. Surrogate key formatting is implemented in src dw_agent modeling naming dot py.
+Congratulations, you now understand the inner code mechanics of automated dimension and fact generation!

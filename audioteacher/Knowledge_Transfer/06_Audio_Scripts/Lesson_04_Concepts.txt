@@ -1,0 +1,8 @@
+Welcome back student. Today we are going to discuss core data architecture concepts used in this repository.
+Concept one is Kimball Dimensional Modeling, which organizes data into conformed dimensions and metric facts.
+Concept two is the Kimball Bus Matrix, which maps business processes across shared dimensions.
+Concept three is Slowly Changing Dimension Type 2, which tracks historical attribute changes with effective start and end timestamps.
+Concept four is Multi-Dialect Code Generation, which compiles logical data types into Snowflake, BigQuery, or SQLite DDLs.
+Let's pause and understand this with an example. The Kimball Bus Matrix is like a master city plan ensuring all buildings share standard power, water, and road connections.
+Now let's see where this appears in the repository. Dimension design is implemented in dimension_designer dot py and SCD2 logic in scd_policy dot py.
+Congratulations, you now understand the core engineering concepts of automated dimensional design!

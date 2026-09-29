@@ -1,0 +1,8 @@
+Welcome back student. Today we are going to trace the end-to-end data flow within the design agent.
+When execution begins, inventory scan functions hash raw input files for complete audit traceability.
+Next, requirement parsers extract business entities and metrics into strongly-typed dataclasses in contracts dot py.
+Then, the modeling engine groups transactional event tables into business processes and pairs them with conformed dimensions.
+Finally, the exporter writes 27 structured deliverables including SQL DDLs, Excel mapping workbooks, and Mermaid ERD diagrams.
+Let's pause and understand this with an example. The data flow guarantees that every generated fact measure can be traced back to its exact raw source column and business requirement.
+Now let's see where this appears in the repository. Data contract classes are defined in src dw_agent contracts dot py.
+Congratulations, you now understand the end-to-end data flow of the Data Warehouse Design Agent!

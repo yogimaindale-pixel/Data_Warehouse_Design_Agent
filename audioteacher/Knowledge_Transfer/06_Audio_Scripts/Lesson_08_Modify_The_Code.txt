@@ -1,0 +1,9 @@
+Welcome back student. Today we are going to learn how to modify and extend the agent codebase.
+Suppose you want to add support for a new data warehouse platform, such as PostgreSQL or Databricks Delta Lake.
+First, create a new YAML file in config platform_profiles defining target data type mappings.
+Second, register the new profile inside ConfigManager in config dot py.
+Third, update ddl_generator dot py to handle any platform-specific SQL DDL syntax keywords.
+Fourth, execute pytest tests to verify zero regressions across existing target profiles.
+Let's pause and understand this with an example. Adding a platform profile is like adding a new translation dictionary to an automated language translator.
+Now let's see where this appears in the repository. Platform profiles are loaded by load_platform_profile in src dw_agent config dot py.
+Congratulations, you now understand how to safely extend the Data Warehouse Design Agent!
